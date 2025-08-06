@@ -25,6 +25,7 @@ class FormTextField extends StatelessWidget {
       keyboardType: keyboardType,
       maxLines: maxLines,
       validator: validator,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: TextStyle(color: Colors.grey[600], fontSize: 16),

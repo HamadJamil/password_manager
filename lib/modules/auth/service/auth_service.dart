@@ -12,6 +12,7 @@ class AuthService {
   final FireStoreService _fireStoreService = FireStoreService.instance;
 
   User? get currentUser => _auth.currentUser;
+
   bool get isUserLoggedIn => _auth.currentUser != null;
   String? get userId => _auth.currentUser?.uid;
   Stream<User?> get authStateChanges => _auth.authStateChanges();
@@ -40,7 +41,7 @@ class AuthService {
       }
     } on FirebaseAuthException catch (e) {
       if (!context.mounted) return null;
-      showErrorSnackbar(context, getMessageFromErrorCode(e.code), Colors.red);
+      showSnackBarContent(context, getMessageFromErrorCode(e.code), Colors.red);
     }
     return null;
   }
@@ -63,14 +64,16 @@ class AuthService {
       }
     } on FirebaseAuthException catch (e) {
       if (!context.mounted) return null;
-      showErrorSnackbar(context, getMessageFromErrorCode(e.code), Colors.red);
+      showSnackBarContent(context, getMessageFromErrorCode(e.code), Colors.red);
     }
     return null;
   }
 
   Future<void> signOut() async {
     try {
-      await _auth.signOut();
+      if (_auth.currentUser != null) {
+        await _auth.signOut();
+      }
     } catch (e) {
       debugPrint('Failed to sign out: $e');
     }
@@ -81,7 +84,25 @@ class AuthService {
       await _auth.sendPasswordResetEmail(email: email);
     } on FirebaseAuthException catch (e) {
       if (!context.mounted) return;
-      showErrorSnackbar(context, getMessageFromErrorCode(e.code), Colors.red);
+      showSnackBarContent(context, getMessageFromErrorCode(e.code), Colors.red);
+    }
+  }
+
+  Future<void> verifyEmail(BuildContext context) async {
+    final user = _auth.currentUser;
+    try {
+      if (user != null) {
+        await user.sendEmailVerification();
+        if (!context.mounted) return;
+        showSnackBarContent(
+          context,
+          'Verification email sent. Please check your inbox.',
+          Colors.blue,
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      if (!context.mounted) return;
+      showSnackBarContent(context, getMessageFromErrorCode(e.code), Colors.red);
     }
   }
 }

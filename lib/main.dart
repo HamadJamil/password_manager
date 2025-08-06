@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:password_manager/firebase_options.dart';
-import 'package:password_manager/modules/auth/screens/log_in_screen.dart';
+import 'package:password_manager/modules/auth/service/auth_wrapper.dart';
 import 'package:password_manager/theme/app_theme.dart';
 
 void main() async {
@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: LogInScreen(),
+      home: AuthWrapper(),
     );
   }
 }

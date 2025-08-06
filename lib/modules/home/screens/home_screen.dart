@@ -19,6 +19,15 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   @override
+  void initState() {
+    super.initState();
+    // Load passwords from Firestore when the screen is initialized
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<HomeScreenProvider>().fetchPasswords();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final selectedCategory =
         context.watch<HomeScreenProvider>().selectedCategory;

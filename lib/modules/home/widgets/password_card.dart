@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:password_manager/model/password_model.dart';
+import 'package:password_manager/modules/home/screens/add_password_screen.dart';
+import 'package:password_manager/modules/home/service/fire_store_password_service.dart';
 import 'package:password_manager/utils/utils.dart';
+import 'package:provider/provider.dart';
 
 class PasswordCard extends StatelessWidget {
   const PasswordCard({super.key, required this.password});
@@ -79,13 +82,19 @@ class PasswordCard extends StatelessWidget {
             onSelected: (value) {
               switch (value) {
                 case 'edit':
-                  // Handle edit
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) {
+                        return AddPasswordScreen(passwordToEdit: password);
+                      },
+                    ),
+                  );
                   break;
                 case 'delete':
-                  // Handle delete
-                  break;
-                case 'favorite':
-                  // Handle favorite toggle
+                  context.read<FireStorePasswordService>().deletePassword(
+                    password.id!,
+                  );
                   break;
               }
             },

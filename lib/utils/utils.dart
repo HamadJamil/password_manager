@@ -55,7 +55,7 @@ String formatDate(String dateString) {
   }
 }
 
-void showErrorSnackbar(BuildContext context, Object error, Color color) {
+void showSnackBarContent(BuildContext context, Object error, Color color) {
   ScaffoldMessenger.of(
     context,
   ).showSnackBar(SnackBar(content: Text("$error"), backgroundColor: color));

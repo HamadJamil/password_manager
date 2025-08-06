@@ -46,7 +46,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       _isLoading = false;
     });
     if (!context.mounted) return;
-    showErrorSnackbar(context, 'Reset email sent again!', Colors.green);
+    showSnackBarContent(context, 'Reset email sent again!', Colors.green);
   }
 
   @override

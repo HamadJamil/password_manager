@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:password_manager/model/user_model.dart';
 import 'package:password_manager/modules/auth/service/auth_service.dart';
+import 'package:password_manager/modules/auth/service/auth_wrapper.dart';
 import 'package:password_manager/modules/auth/widgets/auth_form_button.dart';
 import 'package:password_manager/utils/extensions/string_extensions.dart';
 import 'package:password_manager/modules/auth/screens/log_in_screen.dart';
@@ -185,12 +186,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
           );
       if (userModel != null) {
         if (!context.mounted) return;
-        showErrorSnackbar(context, 'Sign Up Successful', Colors.green);
+        showSnackBarContent(context, 'Sign Up Successful', Colors.green);
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => LogInScreen()),
-        );
+        AuthWrapper();
       }
     }
   }

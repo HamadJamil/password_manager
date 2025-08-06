@@ -49,4 +49,17 @@ class FireStorePasswordService {
       debugPrint('Failed to update password entry : $e');
     }
   }
+
+  Future<List<PasswordModel>> getPasswords() async {
+    return await _firestore
+        .collection('users')
+        .doc(_currentUser?.uid)
+        .collection('passwords')
+        .get()
+        .then((snapshot) {
+          return snapshot.docs.map((doc) {
+            return PasswordModel.fromJson(doc.data());
+          }).toList();
+        });
+  }
 }

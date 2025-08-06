@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:password_manager/modules/home/service/fire_store_password_service.dart';
+import 'package:password_manager/modules/home/widgets/form_password_button.dart';
 import 'package:password_manager/utils/data/categories.dart';
 import 'package:password_manager/modules/home/widgets/form_password_field.dart';
 import 'package:password_manager/modules/home/widgets/form_text_field.dart';
 import 'package:password_manager/theme/app_theme.dart';
 import 'package:password_manager/model/password_model.dart';
+import 'package:password_manager/utils/utils.dart';
+import 'package:provider/provider.dart';
 
 class AddPasswordScreen extends StatefulWidget {
   final PasswordModel? passwordToEdit;
@@ -24,8 +28,6 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
   final _websiteController = TextEditingController();
 
   String _selectedCategory = 'Social Media';
-  bool _isPasswordVisible = false;
-  bool _isLoading = false;
 
   @override
   void initState() {
@@ -87,7 +89,6 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
                     children: [
                       SizedBox(height: 10),
 
-                      // Title Field
                       _buildSectionTitle('Title'),
                       FormTextField(
                         controller: _titleController,
@@ -102,7 +103,6 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
                       ),
                       SizedBox(height: 20),
 
-                      // Category Selection
                       _buildSectionTitle('Category'),
                       Container(
                         width: double.infinity,
@@ -150,7 +150,6 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
                       ),
                       SizedBox(height: 20),
 
-                      // Login Credentials Section
                       _buildSectionTitle('Login Credentials'),
                       FormTextField(
                         controller: _usernameController,
@@ -167,7 +166,6 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
                       SizedBox(height: 16),
                       FormPasswordField(
                         passwordController: _passwordController,
-                        isPasswordVisible: _isPasswordVisible,
                       ),
                       SizedBox(height: 20),
 
@@ -190,35 +188,13 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
           Container(
             color: Colors.white,
             padding: EdgeInsets.all(20),
-            child: FilledButton(
-              onPressed: _isLoading ? null : _savePassword,
-              style: FilledButton.styleFrom(
-                backgroundColor: AppTheme.primaryColor,
-                foregroundColor: Colors.black,
-                minimumSize: Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child:
-                  _isLoading
-                      ? SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.black,
-                          ),
-                        ),
-                      )
-                      : Text(
-                        isEditing ? 'Update Password' : 'Save Password',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+            child: FormPasswordButton(
+              onPressed:
+                  () =>
+                      widget.passwordToEdit != null
+                          ? updatePassword(context)
+                          : _savePassword(context),
+              isEditing: isEditing,
             ),
           ),
         ],
@@ -240,48 +216,50 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
     );
   }
 
-  void _savePassword() async {
+  void _savePassword(BuildContext context) async {
     if (!_formKey.currentState!.validate()) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    // Simulate API call
+    PasswordModel passwordModel = PasswordModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      title: _titleController.text,
+      username: _usernameController.text,
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+      website: _websiteController.text.trim(),
+      category: _selectedCategory,
+      createdAt: DateTime.now().toIso8601String(),
+    );
+    context.read<FireStorePasswordService>().addNewPassword(passwordModel);
     await Future.delayed(Duration(seconds: 1));
 
-    final password = PasswordModel(
-      id:
-          widget.passwordToEdit?.id ??
-          DateTime.now().millisecondsSinceEpoch.toString(),
-      title: _titleController.text.trim(),
-      username: _usernameController.text.trim(),
+    if (!context.mounted) return;
+    showSnackBarContent(context, 'Password saved successfully!', Colors.green);
+    Navigator.pop(context);
+  }
+
+  void updatePassword(BuildContext context) async {
+    if (!_formKey.currentState!.validate()) return;
+    PasswordModel passwordModel = PasswordModel(
+      id: widget.passwordToEdit?.id,
+      title: _titleController.text,
+      username: _usernameController.text,
       email: _emailController.text.trim(),
-      password: _passwordController.text,
+      password: _passwordController.text.trim(),
       website: _websiteController.text.trim(),
       category: _selectedCategory,
       createdAt:
           widget.passwordToEdit?.createdAt ?? DateTime.now().toIso8601String(),
       updatedAt: DateTime.now().toIso8601String(),
     );
+    context.read<FireStorePasswordService>().updatePassword(passwordModel);
+    await Future.delayed(Duration(seconds: 1));
 
-    setState(() {
-      _isLoading = false;
-    });
-
-    // Show success message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          widget.passwordToEdit != null
-              ? 'Password updated successfully!'
-              : 'Password saved successfully!',
-        ),
-        backgroundColor: Colors.green,
-      ),
+    if (!context.mounted) return;
+    showSnackBarContent(
+      context,
+      'Password updated successfully!',
+      Colors.green,
     );
-
-    Navigator.pop(context, password);
+    Navigator.pop(context);
   }
 
   @override

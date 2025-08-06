@@ -3,16 +3,14 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:password_manager/model/user_model.dart';
 import 'package:password_manager/modules/auth/service/auth_service.dart';
+import 'package:password_manager/modules/auth/service/auth_wrapper.dart';
 import 'package:password_manager/modules/auth/widgets/auth_form_button.dart';
-import 'package:password_manager/modules/home/provider/home_screen_provider.dart';
 import 'package:password_manager/utils/extensions/string_extensions.dart';
 import 'package:password_manager/modules/auth/screens/forgot_password_screen.dart';
 import 'package:password_manager/modules/auth/widgets/auth_form_text_field.dart';
 import 'package:password_manager/modules/auth/widgets/auth_from_password_field.dart';
-import 'package:password_manager/modules/home/screens/home_screen.dart';
 import 'package:password_manager/modules/auth/screens/sign_up_screen.dart';
 import 'package:password_manager/utils/utils.dart';
-import 'package:provider/provider.dart';
 
 class LogInScreen extends StatefulWidget {
   const LogInScreen({super.key});
@@ -215,17 +213,8 @@ class _LogInScreenState extends State<LogInScreen> {
           );
       if (userModel != null) {
         if (!context.mounted) return;
-        showErrorSnackbar(context, 'Login Successful', Colors.green);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) => ChangeNotifierProvider(
-                  create: (_) => HomeScreenProvider(),
-                  child: HomeScreen(),
-                ),
-          ),
-        );
+        showSnackBarContent(context, 'Login Successful', Colors.green);
+        AuthWrapper();
       }
     }
   }
