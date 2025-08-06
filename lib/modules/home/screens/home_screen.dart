@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:password_manager/data/categories.dart';
+import 'package:password_manager/utils/data/categories.dart';
 import 'package:password_manager/modules/home/provider/home_screen_provider.dart';
 import 'package:password_manager/modules/home/widgets/category_card.dart';
 import 'package:password_manager/modules/home/widgets/empty_list_state.dart';
@@ -86,8 +86,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         name: 'All',
                         icon: Icons.grid_view,
                         color: Colors.grey,
-                        count:
-                            context.read<HomeScreenProvider>().passwords.length,
+                        count: context
+                            .read<HomeScreenProvider>()
+                            .passwordCategoryLength('All'),
                         isSelected: selectedCategory == 'All',
                       ),
                       SizedBox(width: size.width * 0.032),
@@ -98,7 +99,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             name: category['name'],
                             icon: category['icon'],
                             color: category['color'],
-                            count: category['count'],
+                            count: context
+                                .read<HomeScreenProvider>()
+                                .passwordCategoryLength(category['name']),
                             isSelected: selectedCategory == category['name'],
                           ),
                         ),

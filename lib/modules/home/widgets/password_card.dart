@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:password_manager/data/categories.dart';
 import 'package:password_manager/model/password_model.dart';
+import 'package:password_manager/utils/utils.dart';
 
 class PasswordCard extends StatelessWidget {
   const PasswordCard({super.key, required this.password});
@@ -31,14 +31,14 @@ class PasswordCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: _getCategoryColor(
+              color: getCategoryColor(
                 password.category ?? '',
-              ).withOpacity(0.1),
+              ).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
-              _getCategoryIcon(password.category ?? ''),
-              color: _getCategoryColor(password.category ?? ''),
+              getCategoryIcon(password.category ?? ''),
+              color: getCategoryColor(password.category ?? ''),
               size: 24,
             ),
           ),
@@ -64,7 +64,7 @@ class PasswordCard extends StatelessWidget {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'Last updated: ${_formatDate(password.updatedAt ?? password.createdAt ?? '')}',
+                  'Last updated: ${formatDate(password.updatedAt ?? password.createdAt ?? '')}',
                   style: GoogleFonts.poppins(
                     color: Colors.grey[500],
                     fontSize: 12,
@@ -117,38 +117,5 @@ class PasswordCard extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Color _getCategoryColor(String category) {
-    final categoryData = categories.firstWhere(
-      (c) => c['name'] == category,
-      orElse: () => {'color': Colors.grey},
-    );
-    return categoryData['color'];
-  }
-
-  IconData _getCategoryIcon(String category) {
-    final categoryData = categories.firstWhere(
-      (c) => c['name'] == category,
-      orElse: () => {'icon': Icons.lock},
-    );
-    return categoryData['icon'];
-  }
-
-  String _formatDate(String dateString) {
-    if (dateString.isEmpty) return 'Unknown';
-    try {
-      final date = DateTime.parse(dateString);
-      final now = DateTime.now();
-      final difference = now.difference(date).inDays;
-
-      if (difference == 0) return 'Today';
-      if (difference == 1) return 'Yesterday';
-      if (difference < 7) return '$difference days ago';
-      if (difference < 30) return '${(difference / 7).floor()} weeks ago';
-      return '${(difference / 30).floor()} months ago';
-    } catch (e) {
-      return dateString;
-    }
   }
 }

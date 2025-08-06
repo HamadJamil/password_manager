@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:password_manager/data/categories.dart';
+import 'package:password_manager/utils/data/categories.dart';
 import 'package:password_manager/modules/home/widgets/form_password_field.dart';
 import 'package:password_manager/modules/home/widgets/form_text_field.dart';
 import 'package:password_manager/theme/app_theme.dart';

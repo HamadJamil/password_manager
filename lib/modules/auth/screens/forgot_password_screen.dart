@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:password_manager/utils/extensions/string_extensions.dart';
 import 'package:password_manager/modules/auth/screens/log_in_screen.dart';
-import 'package:password_manager/theme/app_theme.dart';
+import 'package:password_manager/modules/auth/service/auth_service.dart';
+import 'package:password_manager/modules/auth/widgets/auth_form_text_field.dart';
+import 'package:password_manager/utils/utils.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -11,26 +14,19 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   bool _isEmailSent = false;
   bool _isLoading = false;
 
-  void _sendResetEmail() async {
-    if (_emailController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please enter your email address'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
+  void _sendResetEmail(BuildContext context) async {
+    if (!_formKey.currentState!.validate()) return;
     setState(() {
       _isLoading = true;
     });
-
-    // Simulate sending email (replace with actual implementation)
+    AuthService.instance.forgotPassword(_emailController.text, context);
+    if (!context.mounted) return;
+    FocusScope.of(context).unfocus();
     await Future.delayed(Duration(seconds: 2));
 
     setState(() {
@@ -39,32 +35,24 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     });
   }
 
-  void _resendEmail() async {
+  void _resendEmail(BuildContext context) async {
     setState(() {
       _isLoading = true;
     });
-
-    // Simulate resending email (replace with actual implementation)
+    AuthService.instance.forgotPassword(_emailController.text, context);
     await Future.delayed(Duration(seconds: 2));
 
     setState(() {
       _isLoading = false;
     });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Reset email sent again!'),
-        backgroundColor: Colors.green,
-      ),
-    );
+    if (!context.mounted) return;
+    showErrorSnackbar(context, 'Reset email sent again!', Colors.green);
   }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     return Scaffold(
-      backgroundColor: Colors.blueGrey[900],
-
       body: Container(
         height: size.height,
         width: size.width,
@@ -102,44 +90,37 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
             SizedBox(height: size.height * 0.05),
             if (!_isEmailSent) ...[
-              TextField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                style: AppTheme.textFieldStyle,
-                decoration: InputDecoration(
+              Form(
+                key: _formKey,
+                child: AuthFormTextField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
                   hintText: 'Email',
-                  prefixIcon: Icon(Icons.email),
+                  prefixIcon: Icons.email,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your email';
+                    }
+                    if (!value.isValidEmail()) {
+                      return 'Please enter a valid email address';
+                    }
+                    return null;
+                  },
                 ),
               ),
               SizedBox(height: size.height * 0.05),
               FilledButton(
-                onPressed: _isLoading ? null : _sendResetEmail,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: Size(size.width, 50),
-                  backgroundColor: Colors.yellowAccent[700],
-                  foregroundColor: Colors.black,
-                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                  textStyle: TextStyle(fontSize: 18),
-                ),
+                onPressed: _isLoading ? null : () => _sendResetEmail(context),
                 child:
                     _isLoading
-                        ? SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.black,
-                            ),
-                          ),
-                        )
+                        ? buildLoadingIndicator(Colors.black)
                         : Text('Send Reset Email'),
               ),
             ] else ...[
               Container(
                 padding: EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
+                  color: Colors.green.withValues(alpha: 0.1),
                   border: Border.all(color: Colors.green),
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -179,31 +160,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ),
               SizedBox(height: size.height * 0.02),
               OutlinedButton(
-                onPressed: _isLoading ? null : _resendEmail,
+                onPressed: _isLoading ? null : () => _resendEmail(context),
                 style: OutlinedButton.styleFrom(
-                  minimumSize: Size(size.width, 50),
-                  backgroundColor: Colors.transparent,
                   side: BorderSide(color: Colors.yellowAccent[700]!),
-                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  foregroundColor: Colors.yellowAccent[700],
                 ),
                 child:
                     _isLoading
-                        ? SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.yellowAccent[700]!,
-                            ),
-                          ),
-                        )
+                        ? buildLoadingIndicator(Colors.yellowAccent[700]!)
                         : Text(
                           'Resend Email',
-                          style: GoogleFonts.poppins(
-                            color: Colors.yellowAccent[700],
-                            fontSize: 16,
-                          ),
+                          style: GoogleFonts.poppins(fontSize: 16),
                         ),
               ),
             ],

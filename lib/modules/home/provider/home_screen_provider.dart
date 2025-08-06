@@ -63,4 +63,9 @@ class HomeScreenProvider with ChangeNotifier {
     if (_selectedCategory == 'All') return _passwords;
     return _passwords.where((p) => p.category == _selectedCategory).toList();
   }
+
+  int passwordCategoryLength(String selectedCategory) {
+    if (selectedCategory == 'All') return _passwords.length;
+    return _passwords.where((p) => p.category == selectedCategory).length;
+  }
 }

@@ -1,17 +1,23 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:password_manager/model/user_model.dart';
+import 'package:password_manager/modules/auth/service/fire_store_service.dart';
+import 'package:password_manager/utils/utils.dart';
 
 class AuthService {
   AuthService._();
 
-  static final AuthService instance = AuthService._();
+  static AuthService get instance => AuthService._();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FireStoreService _fireStoreService = FireStoreService.instance;
 
   User? get currentUser => _auth.currentUser;
+  bool get isUserLoggedIn => _auth.currentUser != null;
+  String? get userId => _auth.currentUser?.uid;
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  Future<UserModel?> createUserWithEmailAndPassword(
+  Future<UserModel?> signUpUserWithEmailAndPassword(
+    BuildContext context,
     String name,
     String email,
     String password,
@@ -32,13 +38,15 @@ class AuthService {
         await _fireStoreService.createUser(userModel);
         return userModel;
       }
-    } catch (e) {
-      debugPrint('Failed to create user: $e');
+    } on FirebaseAuthException catch (e) {
+      if (!context.mounted) return null;
+      showErrorSnackbar(context, getMessageFromErrorCode(e.code), Colors.red);
     }
     return null;
   }
 
   Future<UserModel?> loginInWithEmailAndPassword(
+    BuildContext context,
     String email,
     String password,
   ) async {
@@ -53,8 +61,9 @@ class AuthService {
         );
         return userModel;
       }
-    } catch (e) {
-      debugPrint('Failed to login: $e');
+    } on FirebaseAuthException catch (e) {
+      if (!context.mounted) return null;
+      showErrorSnackbar(context, getMessageFromErrorCode(e.code), Colors.red);
     }
     return null;
   }
@@ -67,11 +76,12 @@ class AuthService {
     }
   }
 
-  Future<void> forgotPassword(String email) async {
+  Future<void> forgotPassword(String email, BuildContext context) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
-    } catch (e) {
-      debugPrint('Failed to send password reset email: $e');
+    } on FirebaseAuthException catch (e) {
+      if (!context.mounted) return;
+      showErrorSnackbar(context, getMessageFromErrorCode(e.code), Colors.red);
     }
   }
 }
