@@ -44,3 +44,8 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    implementation("androidx.credentials:credentials:1.6.0-alpha04")
+    implementation("androidx.credentials:credentials-play-services-auth:1.6.0-alpha04")
+}
